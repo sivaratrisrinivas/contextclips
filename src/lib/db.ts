@@ -1,132 +1,107 @@
 import { Clip } from '../types'
 
-const STORAGE_KEY = 'clips'
+const STORAGE_KEY = 'contextClips'
+const VERSION_KEY = 'dbVersion'
+const CURRENT_VERSION = '2.0-chrome-storage'
 
-// Identify context for debugging
-const CONTEXT_ID = typeof chrome !== 'undefined' && chrome.runtime?.id 
-  ? `${chrome.runtime.id}-${Math.random().toString(36).substr(2, 9)}`
-  : 'unknown-context'
+// Log that we're using the new storage system
+console.log('🚀 [STORAGE v2.0] Loading chrome.storage.local database layer')
+console.log('🚀 [STORAGE v2.0] Version:', CURRENT_VERSION)
 
-console.log('🔍 [DEBUG] Database Module: Loaded in context:', CONTEXT_ID)
-console.log('🔍 [DEBUG] Database Module: Using chrome.storage.local API')
-
-class Database {
-  private contextId: string = CONTEXT_ID
-
+class ChromeStorageDatabase {
   async init(): Promise<void> {
-    console.log('🔍 [DEBUG] Database: Init called (chrome.storage requires no initialization)')
-    console.log('🔍 [DEBUG] Database: Context:', this.contextId)
-    // chrome.storage doesn't need initialization
-    return Promise.resolve()
+    // Verify we're using the right version
+    const versionCheck = await chrome.storage.local.get(VERSION_KEY)
+    const currentVersion = versionCheck[VERSION_KEY]
+    
+    if (currentVersion !== CURRENT_VERSION) {
+      console.log('🚀 [STORAGE v2.0] First run or version upgrade detected')
+      await chrome.storage.local.set({ [VERSION_KEY]: CURRENT_VERSION })
+    }
+    
+    console.log('✅ [STORAGE v2.0] Initialized successfully')
   }
 
   async addClip(clip: Clip): Promise<void> {
-    console.log('🔍 [DEBUG] Database: Starting addClip with chrome.storage')
-    console.log('🔍 [DEBUG] Database: Clip to add:', clip)
-    console.log('🔍 [DEBUG] Database: Context:', this.contextId)
+    console.log('➕ [STORAGE v2.0] Adding clip:', clip.id)
     
-    try {
-      // Get existing clips
-      const result = await chrome.storage.local.get(STORAGE_KEY)
-      const clips: Clip[] = result[STORAGE_KEY] || []
-      
-      console.log('🔍 [DEBUG] Database: Current clips count:', clips.length)
-      
-      // Add new clip
-      clips.push(clip)
-      
-      // Save back to storage
-      await chrome.storage.local.set({ [STORAGE_KEY]: clips })
-      
-      console.log('✅ [DEBUG] Database: Clip added successfully')
-      console.log('🔍 [DEBUG] Database: New clips count:', clips.length)
-      
-      // Verify the write
-      const verifyResult = await chrome.storage.local.get(STORAGE_KEY)
-      const verifyClips: Clip[] = verifyResult[STORAGE_KEY] || []
-      console.log('🔍 [DEBUG] Database: Immediate verification - count:', verifyClips.length)
-    } catch (error) {
-      console.error('❌ [DEBUG] Database: Failed to add clip:', error)
-      throw error
-    }
+    // Get current clips
+    const result = await chrome.storage.local.get(STORAGE_KEY)
+    const clips: Clip[] = result[STORAGE_KEY] || []
+    
+    console.log('📊 [STORAGE v2.0] Current clips:', clips.length)
+    
+    // Add new clip at the beginning
+    clips.unshift(clip)
+    
+    // Save
+    await chrome.storage.local.set({ [STORAGE_KEY]: clips })
+    
+    console.log('✅ [STORAGE v2.0] Clip added. New total:', clips.length)
   }
 
   async getAllClips(): Promise<Clip[]> {
-    console.log('🔍 [DEBUG] Database: Starting getAllClips with chrome.storage')
-    console.log('🔍 [DEBUG] Database: Context:', this.contextId)
+    console.log('📥 [STORAGE v2.0] Getting all clips')
     
-    try {
-      const result = await chrome.storage.local.get(STORAGE_KEY)
-      const clips: Clip[] = result[STORAGE_KEY] || []
-      
-      console.log('🔍 [DEBUG] Database: Retrieved clips count:', clips.length)
-      console.log('🔍 [DEBUG] Database: First few clips:', clips.slice(0, 3))
-      
-      // Sort by timestamp (most recent first)
-      const sortedClips = clips.sort((a, b) => b.timestamp - a.timestamp)
-      
-      console.log('✅ [DEBUG] Database: Returning sorted clips, count:', sortedClips.length)
-      
-      return sortedClips
-    } catch (error) {
-      console.error('❌ [DEBUG] Database: Failed to get clips:', error)
-      throw error
-    }
+    const result = await chrome.storage.local.get(STORAGE_KEY)
+    const clips: Clip[] = result[STORAGE_KEY] || []
+    
+    console.log('📊 [STORAGE v2.0] Retrieved', clips.length, 'clips')
+    
+    // Already in order (newest first) since we unshift on add
+    return clips
   }
 
   async deleteClip(id: string): Promise<void> {
-    console.log('🔍 [DEBUG] Database: Deleting clip:', id)
+    console.log('🗑️ [STORAGE v2.0] Deleting clip:', id)
     
-    try {
-      const result = await chrome.storage.local.get(STORAGE_KEY)
-      const clips: Clip[] = result[STORAGE_KEY] || []
-      
-      const filteredClips = clips.filter(clip => clip.id !== id)
-      
-      await chrome.storage.local.set({ [STORAGE_KEY]: filteredClips })
-      
-      console.log('✅ [DEBUG] Database: Clip deleted successfully')
-    } catch (error) {
-      console.error('❌ [DEBUG] Database: Failed to delete clip:', error)
-      throw error
-    }
+    const result = await chrome.storage.local.get(STORAGE_KEY)
+    const clips: Clip[] = result[STORAGE_KEY] || []
+    
+    const filtered = clips.filter(c => c.id !== id)
+    
+    await chrome.storage.local.set({ [STORAGE_KEY]: filtered })
+    
+    console.log('✅ [STORAGE v2.0] Clip deleted')
   }
 
   async updateClip(clip: Clip): Promise<void> {
-    console.log('🔍 [DEBUG] Database: Updating clip:', clip.id)
+    console.log('✏️ [STORAGE v2.0] Updating clip:', clip.id)
     
-    try {
-      const result = await chrome.storage.local.get(STORAGE_KEY)
-      const clips: Clip[] = result[STORAGE_KEY] || []
-      
-      const index = clips.findIndex(c => c.id === clip.id)
-      if (index !== -1) {
-        clips[index] = clip
-        await chrome.storage.local.set({ [STORAGE_KEY]: clips })
-        console.log('✅ [DEBUG] Database: Clip updated successfully')
-      } else {
-        console.warn('⚠️ [DEBUG] Database: Clip not found for update:', clip.id)
-      }
-    } catch (error) {
-      console.error('❌ [DEBUG] Database: Failed to update clip:', error)
-      throw error
+    const result = await chrome.storage.local.get(STORAGE_KEY)
+    const clips: Clip[] = result[STORAGE_KEY] || []
+    
+    const index = clips.findIndex(c => c.id === clip.id)
+    if (index !== -1) {
+      clips[index] = clip
+      await chrome.storage.local.set({ [STORAGE_KEY]: clips })
+      console.log('✅ [STORAGE v2.0] Clip updated')
+    } else {
+      console.warn('⚠️ [STORAGE v2.0] Clip not found:', clip.id)
     }
   }
 
   async searchClips(query: string): Promise<Clip[]> {
-    const allClips = await this.getAllClips()
+    const clips = await this.getAllClips()
     
-    if (!query.trim()) return allClips
+    if (!query.trim()) return clips
     
-    const lowercaseQuery = query.toLowerCase()
-    
-    return allClips.filter(clip => 
-      clip.content.toLowerCase().includes(lowercaseQuery) ||
-      clip.pageTitle.toLowerCase().includes(lowercaseQuery) ||
-      clip.domain.toLowerCase().includes(lowercaseQuery)
+    const q = query.toLowerCase()
+    return clips.filter(clip => 
+      clip.content.toLowerCase().includes(q) ||
+      clip.pageTitle.toLowerCase().includes(q) ||
+      clip.domain.toLowerCase().includes(q)
     )
   }
 }
 
-export const db = new Database()
+export const db = new ChromeStorageDatabase()
+
+// Initialize immediately
+db.init().then(() => {
+  console.log('🚀 [STORAGE v2.0] Database ready!')
+}).catch(err => {
+  console.error('❌ [STORAGE v2.0] Init failed:', err)
+})
+
 
