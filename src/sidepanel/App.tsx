@@ -124,6 +124,10 @@ function App() {
             await deleteClip(clipId)
             setClips(prev => prev.filter(clip => clip.id !== clipId))
             setFilteredClips(prev => prev.filter(clip => clip.id !== clipId))
+            // Clear selection if deleted clip was selected
+            if (selectedClipId === clipId) {
+                setSelectedClipId(null)
+            }
         } catch (error) {
             console.error('Failed to delete clip:', error)
         }
