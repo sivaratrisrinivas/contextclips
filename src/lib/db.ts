@@ -1,8 +1,6 @@
 import { Clip } from '../types'
 
-const DB_NAME = 'ContextClipsDB'
-const DB_VERSION = 1
-const STORE_NAME = 'clips'
+const STORAGE_KEY = 'clips'
 
 // Identify context for debugging
 const CONTEXT_ID = typeof chrome !== 'undefined' && chrome.runtime?.id 
@@ -10,194 +8,109 @@ const CONTEXT_ID = typeof chrome !== 'undefined' && chrome.runtime?.id
   : 'unknown-context'
 
 console.log('🔍 [DEBUG] Database Module: Loaded in context:', CONTEXT_ID)
+console.log('🔍 [DEBUG] Database Module: Using chrome.storage.local API')
 
 class Database {
-  private db: IDBDatabase | null = null
   private contextId: string = CONTEXT_ID
 
   async init(): Promise<void> {
-    console.log('🔍 [DEBUG] Database: Starting initialization in context:', this.contextId)
-    console.log('🔍 [DEBUG] Database: DB_NAME:', DB_NAME)
-    console.log('🔍 [DEBUG] Database: DB_VERSION:', DB_VERSION)
-    console.log('🔍 [DEBUG] Database: STORE_NAME:', STORE_NAME)
-    console.log('🔍 [DEBUG] Database: Current context:', typeof chrome !== 'undefined' && chrome.runtime ? 'Extension Context' : 'Unknown')
-    console.log('🔍 [DEBUG] Database: IndexedDB available:', typeof indexedDB !== 'undefined')
-    console.log('🔍 [DEBUG] Database: Existing db instance:', !!this.db)
-    
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open(DB_NAME, DB_VERSION)
-      
-      request.onerror = () => {
-        console.error('❌ [DEBUG] Database: Failed to open database:', request.error)
-        reject(request.error)
-      }
-      
-      request.onsuccess = () => {
-        console.log('✅ [DEBUG] Database: Successfully opened database')
-        this.db = request.result
-        console.log('🔍 [DEBUG] Database: Database instance set:', !!this.db)
-        console.log('🔍 [DEBUG] Database: Database name:', this.db?.name)
-        console.log('🔍 [DEBUG] Database: Database version:', this.db?.version)
-        console.log('🔍 [DEBUG] Database: Object stores:', Array.from(this.db?.objectStoreNames || []))
-        resolve()
-      }
-      
-      request.onupgradeneeded = (event) => {
-        console.log('🔍 [DEBUG] Database: Upgrade needed, creating object store')
-        const db = (event.target as IDBOpenDBRequest).result
-        
-        if (!db.objectStoreNames.contains(STORE_NAME)) {
-          console.log('🔍 [DEBUG] Database: Creating object store:', STORE_NAME)
-          const store = db.createObjectStore(STORE_NAME, { keyPath: 'id' })
-          store.createIndex('timestamp', 'timestamp', { unique: false })
-          store.createIndex('domain', 'domain', { unique: false })
-          store.createIndex('contentType', 'contentType', { unique: false })
-          store.createIndex('pinned', 'pinned', { unique: false })
-          console.log('✅ [DEBUG] Database: Object store and indexes created')
-        } else {
-          console.log('🔍 [DEBUG] Database: Object store already exists')
-        }
-      }
-    })
+    console.log('🔍 [DEBUG] Database: Init called (chrome.storage requires no initialization)')
+    console.log('🔍 [DEBUG] Database: Context:', this.contextId)
+    // chrome.storage doesn't need initialization
+    return Promise.resolve()
   }
 
   async addClip(clip: Clip): Promise<void> {
-    console.log('🔍 [DEBUG] Database: Starting addClip')
+    console.log('🔍 [DEBUG] Database: Starting addClip with chrome.storage')
     console.log('🔍 [DEBUG] Database: Clip to add:', clip)
-    console.log('🔍 [DEBUG] Database: Caller context:', new Error().stack?.split('\n')[2] || 'unknown')
+    console.log('🔍 [DEBUG] Database: Context:', this.contextId)
     
-    if (!this.db) {
-      console.log('🔍 [DEBUG] Database: DB not initialized, calling init()')
-      await this.init()
+    try {
+      // Get existing clips
+      const result = await chrome.storage.local.get(STORAGE_KEY)
+      const clips: Clip[] = result[STORAGE_KEY] || []
+      
+      console.log('🔍 [DEBUG] Database: Current clips count:', clips.length)
+      
+      // Add new clip
+      clips.push(clip)
+      
+      // Save back to storage
+      await chrome.storage.local.set({ [STORAGE_KEY]: clips })
+      
+      console.log('✅ [DEBUG] Database: Clip added successfully')
+      console.log('🔍 [DEBUG] Database: New clips count:', clips.length)
+      
+      // Verify the write
+      const verifyResult = await chrome.storage.local.get(STORAGE_KEY)
+      const verifyClips: Clip[] = verifyResult[STORAGE_KEY] || []
+      console.log('🔍 [DEBUG] Database: Immediate verification - count:', verifyClips.length)
+    } catch (error) {
+      console.error('❌ [DEBUG] Database: Failed to add clip:', error)
+      throw error
     }
-    
-    console.log('🔍 [DEBUG] Database: DB initialized, proceeding with add transaction')
-    console.log('🔍 [DEBUG] Database: Using database:', this.db?.name, 'version:', this.db?.version)
-    console.log('🔍 [DEBUG] Database: Available stores:', Array.from(this.db?.objectStoreNames || []))
-    
-    return new Promise((resolve, reject) => {
-      try {
-        const transaction = this.db!.transaction([STORE_NAME], 'readwrite')
-        const store = transaction.objectStore(STORE_NAME)
-        const request = store.add(clip)
-        
-        transaction.oncomplete = () => {
-          console.log('✅ [DEBUG] Database: Clip added and transaction completed')
-          console.log('🔍 [DEBUG] Database: Verifying write - attempting immediate read')
-          
-          // Immediately verify the write
-          const verifyTx = this.db!.transaction([STORE_NAME], 'readonly')
-          const verifyStore = verifyTx.objectStore(STORE_NAME)
-          const countRequest = verifyStore.count()
-          
-          countRequest.onsuccess = () => {
-            console.log('🔍 [DEBUG] Database: Immediate count after write:', countRequest.result)
-          }
-          
-          resolve()
-        }
-        
-        transaction.onerror = () => {
-          console.error('❌ [DEBUG] Database: Transaction failed:', transaction.error)
-          reject(transaction.error)
-        }
-        
-        request.onerror = () => {
-          console.error('❌ [DEBUG] Database: Failed to add clip:', request.error)
-          reject(request.error)
-        }
-      } catch (error) {
-        console.error('❌ [DEBUG] Database: Exception in addClip:', error)
-        reject(error)
-      }
-    })
   }
 
   async getAllClips(): Promise<Clip[]> {
-    console.log('🔍 [DEBUG] Database: Starting getAllClips')
-    console.log('🔍 [DEBUG] Database: Current db state:', !!this.db)
-    console.log('🔍 [DEBUG] Database: Caller context:', new Error().stack?.split('\n')[2] || 'unknown')
-    console.log('🔍 [DEBUG] Database: This instance ID:', this.contextId)
+    console.log('🔍 [DEBUG] Database: Starting getAllClips with chrome.storage')
+    console.log('🔍 [DEBUG] Database: Context:', this.contextId)
     
-    if (!this.db) {
-      console.log('🔍 [DEBUG] Database: DB not initialized, calling init()')
-      await this.init()
-    } else {
-      console.log('🔍 [DEBUG] Database: DB already initialized, reusing connection')
-      console.log('🔍 [DEBUG] Database: DB name:', this.db.name, 'version:', this.db.version)
+    try {
+      const result = await chrome.storage.local.get(STORAGE_KEY)
+      const clips: Clip[] = result[STORAGE_KEY] || []
+      
+      console.log('🔍 [DEBUG] Database: Retrieved clips count:', clips.length)
+      console.log('🔍 [DEBUG] Database: First few clips:', clips.slice(0, 3))
+      
+      // Sort by timestamp (most recent first)
+      const sortedClips = clips.sort((a, b) => b.timestamp - a.timestamp)
+      
+      console.log('✅ [DEBUG] Database: Returning sorted clips, count:', sortedClips.length)
+      
+      return sortedClips
+    } catch (error) {
+      console.error('❌ [DEBUG] Database: Failed to get clips:', error)
+      throw error
     }
-    
-    console.log('🔍 [DEBUG] Database: DB initialized, proceeding with transaction')
-    console.log('🔍 [DEBUG] Database: Using database:', this.db?.name, 'version:', this.db?.version)
-    console.log('🔍 [DEBUG] Database: Available stores:', Array.from(this.db?.objectStoreNames || []))
-    
-    return new Promise((resolve, reject) => {
-      try {
-        const transaction = this.db!.transaction([STORE_NAME], 'readonly')
-        const store = transaction.objectStore(STORE_NAME)
-        
-        // First get count
-        const countRequest = store.count()
-        countRequest.onsuccess = () => {
-          console.log('🔍 [DEBUG] Database: Total records in store:', countRequest.result)
-        }
-        
-        const request = store.getAll()
-        
-        transaction.oncomplete = () => {
-          const clips = request.result.sort((a, b) => b.timestamp - a.timestamp)
-          console.log('🔍 [DEBUG] Database: Transaction complete, sorted clips count:', clips.length)
-          console.log('🔍 [DEBUG] Database: Raw result length:', request.result.length)
-          console.log('🔍 [DEBUG] Database: First few clips:', clips.slice(0, 3))
-          if (clips.length === 0) {
-            console.error('⚠️ [DEBUG] Database: NO CLIPS FOUND - This is the problem!')
-            console.error('⚠️ [DEBUG] Database: But count request said:', countRequest.result)
-          }
-          resolve(clips)
-        }
-        
-        transaction.onerror = () => {
-          console.error('❌ [DEBUG] Database: Transaction failed:', transaction.error)
-          reject(transaction.error)
-        }
-        
-        request.onerror = () => {
-          console.error('❌ [DEBUG] Database: Request failed:', request.error)
-          reject(request.error)
-        }
-      } catch (error) {
-        console.error('❌ [DEBUG] Database: Exception in getAllClips:', error)
-        reject(error)
-      }
-    })
   }
 
   async deleteClip(id: string): Promise<void> {
-    if (!this.db) await this.init()
+    console.log('🔍 [DEBUG] Database: Deleting clip:', id)
     
-    return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([STORE_NAME], 'readwrite')
-      const store = transaction.objectStore(STORE_NAME)
-      const request = store.delete(id)
+    try {
+      const result = await chrome.storage.local.get(STORAGE_KEY)
+      const clips: Clip[] = result[STORAGE_KEY] || []
       
-      transaction.oncomplete = () => resolve()
-      transaction.onerror = () => reject(transaction.error)
-      request.onerror = () => reject(request.error)
-    })
+      const filteredClips = clips.filter(clip => clip.id !== id)
+      
+      await chrome.storage.local.set({ [STORAGE_KEY]: filteredClips })
+      
+      console.log('✅ [DEBUG] Database: Clip deleted successfully')
+    } catch (error) {
+      console.error('❌ [DEBUG] Database: Failed to delete clip:', error)
+      throw error
+    }
   }
 
   async updateClip(clip: Clip): Promise<void> {
-    if (!this.db) await this.init()
+    console.log('🔍 [DEBUG] Database: Updating clip:', clip.id)
     
-    return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([STORE_NAME], 'readwrite')
-      const store = transaction.objectStore(STORE_NAME)
-      const request = store.put(clip)
+    try {
+      const result = await chrome.storage.local.get(STORAGE_KEY)
+      const clips: Clip[] = result[STORAGE_KEY] || []
       
-      transaction.oncomplete = () => resolve()
-      transaction.onerror = () => reject(transaction.error)
-      request.onerror = () => reject(request.error)
-    })
+      const index = clips.findIndex(c => c.id === clip.id)
+      if (index !== -1) {
+        clips[index] = clip
+        await chrome.storage.local.set({ [STORAGE_KEY]: clips })
+        console.log('✅ [DEBUG] Database: Clip updated successfully')
+      } else {
+        console.warn('⚠️ [DEBUG] Database: Clip not found for update:', clip.id)
+      }
+    } catch (error) {
+      console.error('❌ [DEBUG] Database: Failed to update clip:', error)
+      throw error
+    }
   }
 
   async searchClips(query: string): Promise<Clip[]> {
@@ -216,3 +129,4 @@ class Database {
 }
 
 export const db = new Database()
+
