@@ -32,36 +32,30 @@ function detectContentType(content: string): ContentType {
 
 // Listen for messages from content script
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  console.log('🔍 [DEBUG] Background: Received message:', message)
-  console.log('🔍 [DEBUG] Background: Message type:', message.type)
-  console.log('🔍 [DEBUG] Background: Sender:', _sender)
-  console.log('🔍 [DEBUG] Background: Message listener is active')
+  console.log('📨 [SERVICE WORKER v2.0] Message received:', message.type)
   
   if (message.type === 'CAPTURE_CLIPBOARD') {
-    console.log('🔍 [DEBUG] Background: Handling CAPTURE_CLIPBOARD')
     handleClipboardCapture(message.context, message.clipboardContent, sendResponse)
-    return true // Keep message channel open for async response
+    return true
   }
   
   if (message.type === 'GET_CLIPS') {
-    console.log('🔍 [DEBUG] Background: Handling GET_CLIPS')
     handleGetClips(sendResponse)
     return true
   }
   
   if (message.type === 'DELETE_CLIP') {
-    console.log('🔍 [DEBUG] Background: Handling DELETE_CLIP')
     handleDeleteClip(message.clipId, sendResponse)
     return true
   }
   
   if (message.type === 'UPDATE_CLIP') {
-    console.log('🔍 [DEBUG] Background: Handling UPDATE_CLIP')
     handleUpdateClip(message.clip, sendResponse)
     return true
   }
   
-  console.log('⚠️ [DEBUG] Background: Unknown message type:', message.type)
+  console.warn('⚠️ [SERVICE WORKER v2.0] Unknown message type:', message.type)
+  return false
 })
 
 async function handleClipboardCapture(context: ClipContext, clipboardContent: string, sendResponse: (response: any) => void) {
