@@ -230,6 +230,8 @@ function App() {
                                     onDelete={handleDeleteClip}
                                     onTogglePin={handleTogglePin}
                                     onCopy={handleCopyClip}
+                                    isSelected={selectedClipId === clip.id}
+                                    onClick={() => handleClipClick(clip.id)}
                                 />
                             </motion.div>
                         ))}
