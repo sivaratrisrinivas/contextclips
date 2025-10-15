@@ -199,6 +199,12 @@ function App() {
                     onFiltersChange={handleFiltersChange}
                     clips={clips}
                 />
+                {/* Keyboard shortcuts hint */}
+                {filteredClips.length > 0 && (
+                    <div className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                        💡 Tip: Use <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">↑</kbd> <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">↓</kbd> to navigate, <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">Ctrl+C</kbd> or <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded border border-gray-300 dark:border-gray-600">Enter</kbd> to copy
+                    </div>
+                )}
             </div>
 
             {/* Content */}
