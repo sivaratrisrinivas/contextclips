@@ -66,17 +66,17 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 
 async function handleClipboardCapture(context: ClipContext, clipboardContent: string, sendResponse: (response: any) => void) {
   try {
-    console.log('🔍 [DEBUG] Background: Handling clipboard capture with context:', context)
-    console.log('🔍 [DEBUG] Background: Clipboard content length:', clipboardContent?.length || 0)
+    console.log('📋 [SERVICE WORKER v2.0] Capturing clipboard')
+    console.log('📋 [SERVICE WORKER v2.0] Content length:', clipboardContent?.length || 0)
     
     if (!clipboardContent || !clipboardContent.trim()) {
-      console.log('⚠️ [DEBUG] Background: No clipboard content provided')
+      console.log('⚠️ [SERVICE WORKER v2.0] No content')
       sendResponse({ success: false, reason: 'no_content' })
       return
     }
     
-    // Create clip object directly from the provided content
-    const clip = {
+    // Create clip
+    const clip: Clip = {
       id: generateClipId(),
       content: clipboardContent.trim(),
       timestamp: Date.now(),
@@ -88,37 +88,36 @@ async function handleClipboardCapture(context: ClipContext, clipboardContent: st
       tags: []
     }
     
-    console.log('🔍 [DEBUG] Background: Created clip:', clip)
+    console.log('📋 [SERVICE WORKER v2.0] Created clip:', clip.id)
     
-    // Check for duplicates within 5 minutes
-    console.log('🔍 [DEBUG] Background: Checking for duplicates')
+    // Check for duplicates
     const existingClips = await db.getAllClips()
-    console.log('🔍 [DEBUG] Background: Existing clips count:', existingClips.length)
-    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000)
+    console.log('📋 [SERVICE WORKER v2.0] Existing clips:', existingClips.length)
     
+    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000)
     const isDuplicate = existingClips.some(existing => 
       existing.content === clip.content && 
       existing.timestamp > fiveMinutesAgo
     )
     
-    if (!isDuplicate) {
-      console.log('🔍 [DEBUG] Background: No duplicate found, adding clip to database')
-      await db.addClip(clip)
-      console.log('✅ [DEBUG] Background: Clip added to database successfully')
-      
-      // Broadcast to all sidepanels that a new clip was added
-      chrome.runtime.sendMessage({ type: 'CLIP_ADDED', clip }).catch(() => {
-        // Ignore error if no listeners (sidepanel might not be open)
-        console.log('🔍 [DEBUG] Background: No listeners for CLIP_ADDED broadcast (this is normal if sidepanel is closed)')
-      })
-      
-      sendResponse({ success: true, clip })
-    } else {
-      console.log('⚠️ [DEBUG] Background: Duplicate clip detected, not adding')
+    if (isDuplicate) {
+      console.log('⚠️ [SERVICE WORKER v2.0] Duplicate detected')
       sendResponse({ success: false, reason: 'duplicate' })
+      return
     }
+    
+    // Add clip
+    await db.addClip(clip)
+    console.log('✅ [SERVICE WORKER v2.0] Clip saved')
+    
+    // Broadcast to sidepanels
+    chrome.runtime.sendMessage({ type: 'CLIP_ADDED', clip }).catch(() => {
+      console.log('📡 [SERVICE WORKER v2.0] No listeners (sidepanel not open)')
+    })
+    
+    sendResponse({ success: true, clip })
   } catch (error) {
-    console.error('❌ [DEBUG] Background: Failed to handle clipboard capture:', error)
+    console.error('❌ [SERVICE WORKER v2.0] Error:', error)
     sendResponse({ success: false, error: (error as Error).message })
   }
 }
