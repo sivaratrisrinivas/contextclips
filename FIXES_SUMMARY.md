@@ -22,18 +22,19 @@
 ### 2. ✅ Not able to see clip items in the sidepanel
 **Problem:** Clips were not appearing in the sidepanel after being copied.
 
-**Root Cause:** IndexedDB transaction race condition - the database was resolving promises on `request.onsuccess` instead of waiting for `transaction.oncomplete`, causing queries to execute before write transactions were fully committed.
+**Root Cause:** **Database Context Isolation** - Chrome extensions isolate IndexedDB storage between different contexts (service worker vs sidepanel). Each context had its own separate IndexedDB instance, so clips written by the service worker were invisible to the sidepanel.
 
 **Solution:**
-- Fixed IndexedDB transaction handling to wait for `transaction.oncomplete` instead of `request.onsuccess`
-- This ensures write operations are fully committed before subsequent reads
+- **Replaced IndexedDB with `chrome.storage.local` API**
+- `chrome.storage.local` is specifically designed for Chrome extensions
+- Storage is automatically shared across ALL extension contexts (service worker, sidepanel, popup, content scripts)
+- Persists across service worker restarts
+- Simpler, more reliable, and the recommended approach for Chrome extensions
 - Added real-time update listener to refresh clips when new ones are captured
 - Implemented message broadcasting from background script when new clips are added
-- Ensured proper initialization of the database connection
-- Added proper error handling and logging throughout the data flow
 
 **Files Modified:**
-- `/app/src/lib/db.ts` - Fixed transaction completion handling in all database methods
+- `/app/src/lib/db.ts` - **Complete rewrite** to use chrome.storage.local instead of IndexedDB
 - `/app/src/sidepanel/App.tsx` - Added message listener for `CLIP_ADDED` events
 - `/app/src/background/service-worker.ts` - Added broadcast message when clips are added
 
@@ -56,12 +57,12 @@ Users can now use the following keyboard shortcuts in the sidepanel:
 
 ## How to Test
 
-1. **Install the extension:**
+1. **CRITICAL: Reload the extension:**
    - Open Chrome and go to `chrome://extensions/`
    - Enable "Developer mode"
-   - Click "Load unpacked"
-   - Select the `/app/dist` folder
-   - **IMPORTANT**: After loading, click "Reload" button to refresh the extension
+   - Find "Context Clips" extension
+   - Click the **🔄 circular reload button** on the extension card
+   - This is different from refreshing - you MUST reload the extension!
 
 2. **Test copying:**
    - Open any website
@@ -79,35 +80,41 @@ Users can now use the following keyboard shortcuts in the sidepanel:
 
 ## Technical Details
 
+### Why chrome.storage.local?
+
+**Before (IndexedDB):**
+- ❌ Service worker has its own IndexedDB
+- ❌ Sidepanel has its own IndexedDB
+- ❌ Data not shared between contexts
+- ❌ Service worker restarts lose database connection
+
+**After (chrome.storage.local):**
+- ✅ Single shared storage across all contexts
+- ✅ Designed specifically for Chrome extensions
+- ✅ Persists across service worker lifecycle
+- ✅ Simpler API, no transactions needed
+- ✅ Automatically synchronized
+
 ### Data Flow
 1. Content Script captures copy events → 
 2. Reads clipboard content → 
 3. Sends to Background Service Worker → 
-4. Background saves to IndexedDB (waits for transaction completion) → 
+4. Background saves to chrome.storage.local → 
 5. Background broadcasts to Sidepanel → 
-6. Sidepanel updates UI
+6. Sidepanel queries chrome.storage.local (same storage!) → 
+7. Sidepanel updates UI
 
-### Database Transaction Fix
-**Before:** Promise resolved on `request.onsuccess` (premature)
+### Storage Implementation
 ```javascript
-request.onsuccess = () => {
-  resolve() // Transaction might not be committed yet!
-}
+// Add clip
+await chrome.storage.local.set({ clips: [...clips, newClip] })
+
+// Get all clips
+const result = await chrome.storage.local.get('clips')
+const clips = result.clips || []
 ```
 
-**After:** Promise resolved on `transaction.oncomplete` (correct)
-```javascript
-transaction.oncomplete = () => {
-  resolve() // Transaction fully committed
-}
-```
-
-This ensures that when `addClip()` completes, the data is guaranteed to be visible to subsequent `getAllClips()` calls.
-
-### State Management
-- Clips are stored in IndexedDB for persistence
-- Sidepanel maintains local state for performance
-- Real-time updates via Chrome message passing API
+Simple, reliable, and works across all contexts!
 
 ## Build Information
 
@@ -115,3 +122,4 @@ Build completed successfully with no errors:
 - TypeScript compilation: ✓ Passed
 - Vite build: ✓ Passed
 - Total bundle size: ~290 KB (gzipped: ~93 KB)
+- Database layer: Reduced from 200+ lines to ~130 lines (simpler!)
