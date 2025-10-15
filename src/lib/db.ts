@@ -108,6 +108,7 @@ class Database {
   async getAllClips(): Promise<Clip[]> {
     console.log('🔍 [DEBUG] Database: Starting getAllClips')
     console.log('🔍 [DEBUG] Database: Current db state:', !!this.db)
+    console.log('🔍 [DEBUG] Database: Caller context:', new Error().stack?.split('\n')[2] || 'unknown')
     
     if (!this.db) {
       console.log('🔍 [DEBUG] Database: DB not initialized, calling init()')
@@ -115,27 +116,45 @@ class Database {
     }
     
     console.log('🔍 [DEBUG] Database: DB initialized, proceeding with transaction')
+    console.log('🔍 [DEBUG] Database: Using database:', this.db?.name, 'version:', this.db?.version)
+    console.log('🔍 [DEBUG] Database: Available stores:', Array.from(this.db?.objectStoreNames || []))
     
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([STORE_NAME], 'readonly')
-      const store = transaction.objectStore(STORE_NAME)
-      const request = store.getAll()
-      
-      transaction.oncomplete = () => {
-        const clips = request.result.sort((a, b) => b.timestamp - a.timestamp)
-        console.log('🔍 [DEBUG] Database: Transaction complete, sorted clips count:', clips.length)
-        console.log('🔍 [DEBUG] Database: First few clips:', clips.slice(0, 3))
-        resolve(clips)
-      }
-      
-      transaction.onerror = () => {
-        console.error('❌ [DEBUG] Database: Transaction failed:', transaction.error)
-        reject(transaction.error)
-      }
-      
-      request.onerror = () => {
-        console.error('❌ [DEBUG] Database: Request failed:', request.error)
-        reject(request.error)
+      try {
+        const transaction = this.db!.transaction([STORE_NAME], 'readonly')
+        const store = transaction.objectStore(STORE_NAME)
+        
+        // First get count
+        const countRequest = store.count()
+        countRequest.onsuccess = () => {
+          console.log('🔍 [DEBUG] Database: Total records in store:', countRequest.result)
+        }
+        
+        const request = store.getAll()
+        
+        transaction.oncomplete = () => {
+          const clips = request.result.sort((a, b) => b.timestamp - a.timestamp)
+          console.log('🔍 [DEBUG] Database: Transaction complete, sorted clips count:', clips.length)
+          console.log('🔍 [DEBUG] Database: Raw result length:', request.result.length)
+          console.log('🔍 [DEBUG] Database: First few clips:', clips.slice(0, 3))
+          if (clips.length === 0) {
+            console.error('⚠️ [DEBUG] Database: NO CLIPS FOUND - This is the problem!')
+          }
+          resolve(clips)
+        }
+        
+        transaction.onerror = () => {
+          console.error('❌ [DEBUG] Database: Transaction failed:', transaction.error)
+          reject(transaction.error)
+        }
+        
+        request.onerror = () => {
+          console.error('❌ [DEBUG] Database: Request failed:', request.error)
+          reject(request.error)
+        }
+      } catch (error) {
+        console.error('❌ [DEBUG] Database: Exception in getAllClips:', error)
+        reject(error)
       }
     })
   }
