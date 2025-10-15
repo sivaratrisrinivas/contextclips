@@ -7,6 +7,8 @@ interface ClipCardProps {
     onDelete: (id: string) => void
     onTogglePin: (clip: Clip) => void
     onCopy: (content: string) => void
+    isSelected?: boolean
+    onClick?: () => void
 }
 
 export function ClipCard({ clip, onDelete, onTogglePin, onCopy }: ClipCardProps) {
