@@ -63,10 +63,16 @@ class Database {
       const store = transaction.objectStore(STORE_NAME)
       const request = store.add(clip)
       
-      request.onsuccess = () => {
-        console.log('✅ [DEBUG] Database: Clip added successfully')
+      transaction.oncomplete = () => {
+        console.log('✅ [DEBUG] Database: Clip added and transaction completed')
         resolve()
       }
+      
+      transaction.onerror = () => {
+        console.error('❌ [DEBUG] Database: Transaction failed:', transaction.error)
+        reject(transaction.error)
+      }
+      
       request.onerror = () => {
         console.error('❌ [DEBUG] Database: Failed to add clip:', request.error)
         reject(request.error)
