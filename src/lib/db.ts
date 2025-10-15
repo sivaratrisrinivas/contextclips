@@ -137,7 +137,8 @@ class Database {
       const store = transaction.objectStore(STORE_NAME)
       const request = store.put(clip)
       
-      request.onsuccess = () => resolve()
+      transaction.oncomplete = () => resolve()
+      transaction.onerror = () => reject(transaction.error)
       request.onerror = () => reject(request.error)
     })
   }
