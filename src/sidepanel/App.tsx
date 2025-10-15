@@ -51,6 +51,56 @@ function App() {
         }
     }, [searchQuery, clips])
 
+    // Keyboard shortcuts handler
+    useEffect(() => {
+        const handleKeyDown = (event: KeyboardEvent) => {
+            // Ctrl+C or Cmd+C to copy selected clip
+            if ((event.ctrlKey || event.metaKey) && event.key === 'c') {
+                if (selectedClipId) {
+                    const selectedClip = clips.find(clip => clip.id === selectedClipId)
+                    if (selectedClip) {
+                        event.preventDefault()
+                        handleCopyClip(selectedClip.content)
+                        console.log('✅ [DEBUG] App: Copied selected clip with Ctrl+C')
+                    }
+                }
+            }
+            
+            // Arrow keys to navigate clips
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault()
+                const currentIndex = filteredClips.findIndex(clip => clip.id === selectedClipId)
+                
+                if (event.key === 'ArrowDown') {
+                    const nextIndex = currentIndex < filteredClips.length - 1 ? currentIndex + 1 : 0
+                    setSelectedClipId(filteredClips[nextIndex]?.id || null)
+                } else {
+                    const prevIndex = currentIndex > 0 ? currentIndex - 1 : filteredClips.length - 1
+                    setSelectedClipId(filteredClips[prevIndex]?.id || null)
+                }
+            }
+            
+            // Enter to copy selected clip
+            if (event.key === 'Enter' && selectedClipId) {
+                const selectedClip = clips.find(clip => clip.id === selectedClipId)
+                if (selectedClip) {
+                    handleCopyClip(selectedClip.content)
+                }
+            }
+            
+            // Delete to remove selected clip
+            if (event.key === 'Delete' && selectedClipId) {
+                handleDeleteClip(selectedClipId)
+            }
+        }
+
+        window.addEventListener('keydown', handleKeyDown)
+        
+        return () => {
+            window.removeEventListener('keydown', handleKeyDown)
+        }
+    }, [selectedClipId, clips, filteredClips])
+
     const loadClips = async () => {
         try {
             console.log('🔍 [DEBUG] App: Starting to load clips')
