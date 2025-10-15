@@ -15,6 +15,7 @@ function App() {
     const [searchQuery, setSearchQuery] = useState('')
     const [filters, setFilters] = useState<SearchFilters>({})
     const [loading, setLoading] = useState(true)
+    const [selectedClipId, setSelectedClipId] = useState<string | null>(null)
 
     const {
         getAllClips,
@@ -26,6 +27,20 @@ function App() {
 
     useEffect(() => {
         loadClips()
+        
+        // Listen for new clips from background script
+        const handleMessage = (message: any) => {
+            if (message.type === 'CLIP_ADDED') {
+                console.log('📥 [DEBUG] App: New clip added, refreshing...')
+                loadClips()
+            }
+        }
+        
+        chrome.runtime.onMessage.addListener(handleMessage)
+        
+        return () => {
+            chrome.runtime.onMessage.removeListener(handleMessage)
+        }
     }, [])
 
     useEffect(() => {
