@@ -117,10 +117,14 @@ class Database {
     console.log('🔍 [DEBUG] Database: Starting getAllClips')
     console.log('🔍 [DEBUG] Database: Current db state:', !!this.db)
     console.log('🔍 [DEBUG] Database: Caller context:', new Error().stack?.split('\n')[2] || 'unknown')
+    console.log('🔍 [DEBUG] Database: This instance ID:', this.contextId)
     
     if (!this.db) {
       console.log('🔍 [DEBUG] Database: DB not initialized, calling init()')
       await this.init()
+    } else {
+      console.log('🔍 [DEBUG] Database: DB already initialized, reusing connection')
+      console.log('🔍 [DEBUG] Database: DB name:', this.db.name, 'version:', this.db.version)
     }
     
     console.log('🔍 [DEBUG] Database: DB initialized, proceeding with transaction')
@@ -147,6 +151,7 @@ class Database {
           console.log('🔍 [DEBUG] Database: First few clips:', clips.slice(0, 3))
           if (clips.length === 0) {
             console.error('⚠️ [DEBUG] Database: NO CLIPS FOUND - This is the problem!')
+            console.error('⚠️ [DEBUG] Database: But count request said:', countRequest.result)
           }
           resolve(clips)
         }
