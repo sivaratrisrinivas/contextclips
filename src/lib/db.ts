@@ -96,15 +96,20 @@ class Database {
       const store = transaction.objectStore(STORE_NAME)
       const request = store.getAll()
       
-      request.onsuccess = () => {
-        console.log('🔍 [DEBUG] Database: Transaction successful, raw result:', request.result)
+      transaction.oncomplete = () => {
         const clips = request.result.sort((a, b) => b.timestamp - a.timestamp)
-        console.log('🔍 [DEBUG] Database: Sorted clips count:', clips.length)
+        console.log('🔍 [DEBUG] Database: Transaction complete, sorted clips count:', clips.length)
         console.log('🔍 [DEBUG] Database: First few clips:', clips.slice(0, 3))
         resolve(clips)
       }
+      
+      transaction.onerror = () => {
+        console.error('❌ [DEBUG] Database: Transaction failed:', transaction.error)
+        reject(transaction.error)
+      }
+      
       request.onerror = () => {
-        console.error('❌ [DEBUG] Database: Transaction failed:', request.error)
+        console.error('❌ [DEBUG] Database: Request failed:', request.error)
         reject(request.error)
       }
     })
