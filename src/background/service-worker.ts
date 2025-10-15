@@ -1,6 +1,9 @@
 import { db } from '../lib/db'
 import { Clip, ClipContext, ContentType } from '../types'
 
+console.log('🚀 [SERVICE WORKER v2.0] Starting up...')
+console.log('🚀 [SERVICE WORKER v2.0] Using chrome.storage.local database')
+
 // Helper functions
 function generateClipId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
