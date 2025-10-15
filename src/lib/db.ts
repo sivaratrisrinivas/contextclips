@@ -12,6 +12,9 @@ class Database {
     console.log('🔍 [DEBUG] Database: DB_NAME:', DB_NAME)
     console.log('🔍 [DEBUG] Database: DB_VERSION:', DB_VERSION)
     console.log('🔍 [DEBUG] Database: STORE_NAME:', STORE_NAME)
+    console.log('🔍 [DEBUG] Database: Current context:', typeof chrome !== 'undefined' && chrome.runtime ? 'Extension Context' : 'Unknown')
+    console.log('🔍 [DEBUG] Database: IndexedDB available:', typeof indexedDB !== 'undefined')
+    console.log('🔍 [DEBUG] Database: Existing db instance:', !!this.db)
     
     return new Promise((resolve, reject) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION)
