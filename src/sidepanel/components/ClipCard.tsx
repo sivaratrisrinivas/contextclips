@@ -11,7 +11,7 @@ interface ClipCardProps {
     onClick?: () => void
 }
 
-export function ClipCard({ clip, onDelete, onTogglePin, onCopy }: ClipCardProps) {
+export function ClipCard({ clip, onDelete, onTogglePin, onCopy, isSelected = false, onClick }: ClipCardProps) {
     const [isHovered, setIsHovered] = useState(false)
     // const [showActions, setShowActions] = useState(false)
 
