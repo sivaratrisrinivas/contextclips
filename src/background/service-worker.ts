@@ -124,18 +124,14 @@ async function handleClipboardCapture(context: ClipContext, clipboardContent: st
 
 async function handleGetClips(sendResponse: (response: any) => void) {
   try {
-    console.log('🔍 [DEBUG] Background: Starting to get clips from database')
-    console.log('🔍 [DEBUG] Database instance:', !!db)
+    console.log('📥 [SERVICE WORKER v2.0] Getting clips')
     
     const clips = await db.getAllClips()
-    console.log('🔍 [DEBUG] Background: Retrieved clips from database:', clips.length)
-    console.log('🔍 [DEBUG] Background: First few clips:', clips.slice(0, 3))
+    console.log('📥 [SERVICE WORKER v2.0] Retrieved:', clips.length, 'clips')
     
     sendResponse({ success: true, clips })
-    console.log('✅ [DEBUG] Background: Successfully sent clips to sidepanel')
   } catch (error) {
-    console.error('❌ [DEBUG] Background: Failed to get clips:', error)
-    console.error('❌ [DEBUG] Error details:', error)
+    console.error('❌ [SERVICE WORKER v2.0] Error:', error)
     sendResponse({ success: false, error: (error as Error).message })
   }
 }
