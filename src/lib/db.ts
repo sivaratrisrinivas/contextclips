@@ -56,6 +56,7 @@ class Database {
   async addClip(clip: Clip): Promise<void> {
     console.log('🔍 [DEBUG] Database: Starting addClip')
     console.log('🔍 [DEBUG] Database: Clip to add:', clip)
+    console.log('🔍 [DEBUG] Database: Caller context:', new Error().stack?.split('\n')[2] || 'unknown')
     
     if (!this.db) {
       console.log('🔍 [DEBUG] Database: DB not initialized, calling init()')
@@ -63,25 +64,43 @@ class Database {
     }
     
     console.log('🔍 [DEBUG] Database: DB initialized, proceeding with add transaction')
+    console.log('🔍 [DEBUG] Database: Using database:', this.db?.name, 'version:', this.db?.version)
+    console.log('🔍 [DEBUG] Database: Available stores:', Array.from(this.db?.objectStoreNames || []))
     
     return new Promise((resolve, reject) => {
-      const transaction = this.db!.transaction([STORE_NAME], 'readwrite')
-      const store = transaction.objectStore(STORE_NAME)
-      const request = store.add(clip)
-      
-      transaction.oncomplete = () => {
-        console.log('✅ [DEBUG] Database: Clip added and transaction completed')
-        resolve()
-      }
-      
-      transaction.onerror = () => {
-        console.error('❌ [DEBUG] Database: Transaction failed:', transaction.error)
-        reject(transaction.error)
-      }
-      
-      request.onerror = () => {
-        console.error('❌ [DEBUG] Database: Failed to add clip:', request.error)
-        reject(request.error)
+      try {
+        const transaction = this.db!.transaction([STORE_NAME], 'readwrite')
+        const store = transaction.objectStore(STORE_NAME)
+        const request = store.add(clip)
+        
+        transaction.oncomplete = () => {
+          console.log('✅ [DEBUG] Database: Clip added and transaction completed')
+          console.log('🔍 [DEBUG] Database: Verifying write - attempting immediate read')
+          
+          // Immediately verify the write
+          const verifyTx = this.db!.transaction([STORE_NAME], 'readonly')
+          const verifyStore = verifyTx.objectStore(STORE_NAME)
+          const countRequest = verifyStore.count()
+          
+          countRequest.onsuccess = () => {
+            console.log('🔍 [DEBUG] Database: Immediate count after write:', countRequest.result)
+          }
+          
+          resolve()
+        }
+        
+        transaction.onerror = () => {
+          console.error('❌ [DEBUG] Database: Transaction failed:', transaction.error)
+          reject(transaction.error)
+        }
+        
+        request.onerror = () => {
+          console.error('❌ [DEBUG] Database: Failed to add clip:', request.error)
+          reject(request.error)
+        }
+      } catch (error) {
+        console.error('❌ [DEBUG] Database: Exception in addClip:', error)
+        reject(error)
       }
     })
   }
