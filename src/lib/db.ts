@@ -13,9 +13,10 @@ console.log('🔍 [DEBUG] Database Module: Loaded in context:', CONTEXT_ID)
 
 class Database {
   private db: IDBDatabase | null = null
+  private contextId: string = CONTEXT_ID
 
   async init(): Promise<void> {
-    console.log('🔍 [DEBUG] Database: Starting initialization')
+    console.log('🔍 [DEBUG] Database: Starting initialization in context:', this.contextId)
     console.log('🔍 [DEBUG] Database: DB_NAME:', DB_NAME)
     console.log('🔍 [DEBUG] Database: DB_VERSION:', DB_VERSION)
     console.log('🔍 [DEBUG] Database: STORE_NAME:', STORE_NAME)
