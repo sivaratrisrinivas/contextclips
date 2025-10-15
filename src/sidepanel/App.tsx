@@ -148,9 +148,15 @@ function App() {
     const handleCopyClip = async (content: string) => {
         try {
             await writeToClipboard(content)
+            console.log('✅ [DEBUG] App: Successfully copied to clipboard')
+            // Optional: Show a toast notification here
         } catch (error) {
             console.error('Failed to copy to clipboard:', error)
         }
+    }
+
+    const handleClipClick = (clipId: string) => {
+        setSelectedClipId(clipId)
     }
 
     const handleFiltersChange = (newFilters: SearchFilters) => {
