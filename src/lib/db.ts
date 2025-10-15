@@ -28,6 +28,9 @@ class Database {
         console.log('✅ [DEBUG] Database: Successfully opened database')
         this.db = request.result
         console.log('🔍 [DEBUG] Database: Database instance set:', !!this.db)
+        console.log('🔍 [DEBUG] Database: Database name:', this.db?.name)
+        console.log('🔍 [DEBUG] Database: Database version:', this.db?.version)
+        console.log('🔍 [DEBUG] Database: Object stores:', Array.from(this.db?.objectStoreNames || []))
         resolve()
       }
       
