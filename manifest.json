@@ -1,13 +1,12 @@
 {
     "manifest_version": 3,
     "name": "Context Clips",
-    "version": "1.0.0",
-    "description": "Context-aware clipboard manager for the browser",
+    "version": "3.0.0",
+    "description": "Simple clipboard manager",
     "permissions": [
         "clipboardRead",
         "clipboardWrite",
         "storage",
-        "activeTab",
         "sidePanel"
     ],
     "background": {
@@ -15,12 +14,8 @@
     },
     "content_scripts": [
         {
-            "matches": [
-                "<all_urls>"
-            ],
-            "js": [
-                "src/content/content-script.ts"
-            ]
+            "matches": ["<all_urls>"],
+            "js": ["src/content/content-script.ts"]
         }
     ],
     "side_panel": {
@@ -28,15 +23,6 @@
     },
     "action": {
         "default_title": "Context Clips"
-    },
-    "commands": {
-        "toggle-clipboard": {
-            "suggested_key": {
-                "default": "Ctrl+Shift+V",
-                "mac": "Command+Shift+V"
-            },
-            "description": "Toggle clipboard overlay"
-        }
     },
     "icons": {
         "16": "public/icons/icon-16.png",
