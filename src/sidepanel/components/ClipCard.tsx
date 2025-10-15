@@ -44,15 +44,24 @@ export function ClipCard({ clip, onDelete, onTogglePin, onCopy, isSelected = fal
         onCopy(clip.content)
         // Could add a brief success animation here
     }
+    
+    const handleClick = () => {
+        onClick?.()
+        handleCopy()
+    }
 
     return (
         <motion.div
-            className="group relative bg-white dark:bg-gray-800 rounded-xl border border-gray-200/50 dark:border-gray-700/50 p-4 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.01]"
+            className={`group relative bg-white dark:bg-gray-800 rounded-xl border ${
+                isSelected 
+                    ? 'border-blue-500 ring-2 ring-blue-500/50 dark:border-blue-400 dark:ring-blue-400/50' 
+                    : 'border-gray-200/50 dark:border-gray-700/50'
+            } p-4 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.01]`}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.98 }}
-            onClick={handleCopy}
+            onClick={handleClick}
         >
             {/* Pin indicator */}
             {clip.pinned && (
