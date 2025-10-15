@@ -104,7 +104,7 @@ async function handleClipboardCapture(context: ClipContext, clipboardContent: st
       console.log('✅ [DEBUG] Background: Clip added to database successfully')
       
       // Broadcast to all sidepanels that a new clip was added
-      chrome.runtime.sendMessage({ type: 'CLIP_ADDED', clip }).catch((error) => {
+      chrome.runtime.sendMessage({ type: 'CLIP_ADDED', clip }).catch(() => {
         // Ignore error if no listeners (sidepanel might not be open)
         console.log('🔍 [DEBUG] Background: No listeners for CLIP_ADDED broadcast (this is normal if sidepanel is closed)')
       })
