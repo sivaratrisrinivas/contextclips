@@ -14,8 +14,7 @@ export default defineConfig({
   build: {
     rollupOptions: {
       input: {
-        sidepanel: 'src/sidepanel/index.html',
-        overlay: 'src/overlay/index.html'
+        sidepanel: 'src/sidepanel/index.html'
       }
     }
   }
