@@ -4,6 +4,13 @@ const DB_NAME = 'ContextClipsDB'
 const DB_VERSION = 1
 const STORE_NAME = 'clips'
 
+// Identify context for debugging
+const CONTEXT_ID = typeof chrome !== 'undefined' && chrome.runtime?.id 
+  ? `${chrome.runtime.id}-${Math.random().toString(36).substr(2, 9)}`
+  : 'unknown-context'
+
+console.log('🔍 [DEBUG] Database Module: Loaded in context:', CONTEXT_ID)
+
 class Database {
   private db: IDBDatabase | null = null
 
