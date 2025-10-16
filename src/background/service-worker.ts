@@ -47,6 +47,8 @@ chrome.runtime.onMessage.addListener((msg, _sender, respond) => {
   }
 })
 
-chrome.action.onClicked.addListener(() => {
-  chrome.sidePanel.open({ windowId: chrome.windows.WINDOW_ID_CURRENT })
+chrome.action.onClicked.addListener((tab) => {
+  if (tab.windowId) {
+    chrome.sidePanel.open({ windowId: tab.windowId })
+  }
 })
