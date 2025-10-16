@@ -1,33 +1,46 @@
+# Dependencies
+node_modules/
+
+# Build outputs
 dist/
-node_modules/-e 
+dist_v4/
+.vite/
+
 # Environment files
 *.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
--e 
-# Environment files
-*.env
-*.env.*
+*.env.local
+*.env.*.local
+
+# Editor directories and files
+.vscode/
+.idea/
+*.sublime-*
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# Chrome extension package
+*.crx
+*.pem
+*.zip
+
+# TypeScript
+*.tsbuildinfo
