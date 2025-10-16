@@ -3,7 +3,7 @@ console.log('%c🚀 v4.0 STARTED', 'color: green; font-size: 20px')
 
 const STORAGE_KEY = 'clips_v4'
 
-chrome.runtime.onMessage.addListener((msg, sender, respond) => {
+chrome.runtime.onMessage.addListener((msg, _sender, respond) => {
   console.log('📨 v4.0 Message:', msg.type)
   
   if (msg.type === 'SAVE') {
