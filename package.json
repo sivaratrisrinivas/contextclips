@@ -1,37 +1,40 @@
 {
-  "name": "context-clips",
-  "version": "1.0.0",
-  "description": "Context-aware clipboard manager for Chrome that intelligently organizes your copied content",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "type-check": "tsc --noEmit",
-    "clean": "rm -rf dist"
-  },
-  "keywords": [
-    "clipboard",
-    "chrome-extension",
-    "productivity",
-    "context-aware"
-  ],
-  "author": "",
-  "license": "MIT",
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
-  },
-  "devDependencies": {
-    "@crxjs/vite-plugin": "^2.0.0-beta.21",
-    "@types/chrome": "^0.0.251",
-    "@types/react": "^18.2.37",
-    "@types/react-dom": "^18.2.15",
-    "@vitejs/plugin-react": "^5.0.4",
-    "autoprefixer": "^10.4.16",
-    "postcss": "^8.4.31",
-    "tailwindcss": "^3.3.5",
-    "typescript": "^5.2.2",
-    "vite": "^4.5.0"
-  }
+    "name": "context-clips",
+    "version": "1.0.0",
+    "description": "Context-aware clipboard manager for Chrome that intelligently organizes your copied content",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "tsc && vite build",
+        "preview": "vite preview",
+        "type-check": "tsc --noEmit",
+        "clean": "rm -rf dist"
+    },
+    "keywords": [
+        "clipboard",
+        "chrome-extension",
+        "productivity",
+        "context-aware"
+    ],
+    "author": "",
+    "license": "MIT",
+    "overrides": {
+        "undici": "5.28.4"
+    },
+    "dependencies": {
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0"
+    },
+    "devDependencies": {
+        "@crxjs/vite-plugin": "^2.0.0-beta.21",
+        "@types/chrome": "^0.0.251",
+        "@types/react": "^18.2.37",
+        "@types/react-dom": "^18.2.15",
+        "@vitejs/plugin-react": "^4.3.0",
+        "autoprefixer": "^10.4.16",
+        "postcss": "^8.4.31",
+        "tailwindcss": "^3.3.5",
+        "typescript": "^5.2.2",
+        "vite": "^4.4.9"
+    }
 }
