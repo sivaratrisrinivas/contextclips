@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Clips v4</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      background: #1a1a1a;
+      color: #fff;
+      padding: 16px;
+    }
+    h1 { font-size: 18px; margin-bottom: 16px; color: #4ade80; }
+    .clip {
+      background: #2a2a2a;
+      padding: 12px;
+      margin-bottom: 8px;
+      border-radius: 8px;
+      border: 2px solid #3a3a3a;
+      cursor: pointer;
+    }
+    .clip:hover { border-color: #4ade80; }
+    .clip.selected { border-color: #4ade80; background: #2f3a2f; }
+    .content { margin-bottom: 8px; word-break: break-word; }
+    .meta { font-size: 12px; color: #888; }
+    .empty { text-align: center; padding: 40px; color: #666; }
+    .hint { font-size: 11px; color: #666; margin-bottom: 12px; }
+  </style>
+</head>
+<body>
+  <h1>📋 Context Clips v4.0</h1>
+  <div class="hint">Use ↑↓ to navigate, Enter/Ctrl+C to copy, Delete to remove</div>
+  <div id="app"></div>
+  <script>
+    console.log('%c🎨 v4.0 Sidepanel', 'color: purple; font-size: 16px')
+    
+    let clips = []
+    let selected = 0
+    
+    function load() {
+      chrome.runtime.sendMessage({ type: 'GET' }, (response) => {
+        clips = response.clips || []
+        console.log('📊 v4.0 Loaded:', clips.length)
+        render()
+      })
+    }
+    
+    function render() {
+      const app = document.getElementById('app')
+      if (clips.length === 0) {
+        app.innerHTML = '<div class="empty">No clips yet<br>Copy some text from a webpage!</div>'
+        return
+      }
+      
+      app.innerHTML = clips.map((clip, i) => `
+        <div class="clip ${i === selected ? 'selected' : ''}" data-id="${clip.id}">
+          <div class="content">${clip.content}</div>
+          <div class="meta">${clip.domain} • ${timeAgo(clip.timestamp)}</div>
+        </div>
+      `).join('')
+      
+      document.querySelectorAll('.clip').forEach((el, i) => {
+        el.onclick = () => {
+          selected = i
+          copy(clips[i].content)
+          render()
+        }
+      })
+    }
+    
+    function copy(text) {
+      navigator.clipboard.writeText(text)
+      console.log('✅ v4.0 Copied')
+    }
+    
+    function timeAgo(ts) {
+      const mins = Math.floor((Date.now() - ts) / 60000)
+      if (mins < 1) return 'now'
+      if (mins < 60) return mins + 'm'
+      const hrs = Math.floor(mins / 60)
+      if (hrs < 24) return hrs + 'h'
+      return Math.floor(hrs / 24) + 'd'
+    }
+    
+    document.addEventListener('keydown', (e) => {
+      if (clips.length === 0) return
+      
+      if (e.key === 'ArrowDown') {
+        e.preventDefault()
+        selected = (selected + 1) % clips.length
+        render()
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault()
+        selected = selected > 0 ? selected - 1 : clips.length - 1
+        render()
+      } else if (e.key === 'Enter' || (e.ctrlKey && e.key === 'c')) {
+        e.preventDefault()
+        copy(clips[selected].content)
+      } else if (e.key === 'Delete') {
+        chrome.runtime.sendMessage({ type: 'DELETE', id: clips[selected].id }, () => {
+          load()
+        })
+      }
+    })
+    
+    chrome.runtime.onMessage.addListener((msg) => {
+      if (msg.type === 'REFRESH') load()
+    })
+    
+    load()
+  </script>
+</body>
+</html>
