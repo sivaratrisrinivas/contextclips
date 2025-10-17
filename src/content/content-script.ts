@@ -27,13 +27,15 @@ function handleCopyEvent(): void {
         // Check if extension context is still valid
         if (!isExtensionContextValid()) {
             console.warn(
-                "Extension context invalidated. Please reload the page.",
+                "⚠️ Extension was reloaded. Please refresh this page to continue capturing clips.",
             );
             return;
         }
 
         try {
-            const text = await readClipboard();
+            // Get text from clipboard event instead of reading from clipboard
+            // This avoids permission issues
+            const text = window.getSelection()?.toString() || "";
 
             if (!text || text.trim().length === 0) {
                 return;
@@ -50,15 +52,6 @@ function handleCopyEvent(): void {
             console.error("Error handling copy event:", error);
         }
     }, 100);
-}
-
-async function readClipboard(): Promise<string> {
-    try {
-        return await navigator.clipboard.readText();
-    } catch (error) {
-        console.error("Failed to read clipboard:", error);
-        return "";
-    }
 }
 
 async function saveClipToBackground(content: string): Promise<void> {
