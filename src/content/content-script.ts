@@ -5,6 +5,15 @@ console.log("📋 Context Clips: Content Script Loaded");
 let lastCopiedText = "";
 let copyDebounceTimer: number | null = null;
 
+// Check if extension context is valid
+function isExtensionContextValid(): boolean {
+    try {
+        return !!chrome.runtime?.id;
+    } catch {
+        return false;
+    }
+}
+
 // Listen for copy events
 document.addEventListener("copy", handleCopyEvent);
 
@@ -15,6 +24,14 @@ function handleCopyEvent(): void {
     }
 
     copyDebounceTimer = window.setTimeout(async () => {
+        // Check if extension context is still valid
+        if (!isExtensionContextValid()) {
+            console.warn(
+                "Extension context invalidated. Please reload the page.",
+            );
+            return;
+        }
+
         try {
             const text = await readClipboard();
 
@@ -53,6 +70,14 @@ async function saveClipToBackground(content: string): Promise<void> {
     };
 
     try {
+        // Double-check context before sending message
+        if (!isExtensionContextValid()) {
+            console.warn(
+                "⚠️ Extension was reloaded. Please refresh this page to continue capturing clips.",
+            );
+            return;
+        }
+
         const response = await chrome.runtime.sendMessage({
             type: "SAVE_CLIP",
             data: clipData,
@@ -64,7 +89,17 @@ async function saveClipToBackground(content: string): Promise<void> {
             console.error("Failed to save clip:", response?.error);
         }
     } catch (error) {
-        console.error("Error sending message to background:", error);
+        // Check if error is due to invalidated context
+        if (
+            error instanceof Error &&
+            error.message.includes("Extension context invalidated")
+        ) {
+            console.warn(
+                "⚠️ Extension was reloaded. Please refresh this page to continue capturing clips.",
+            );
+        } else {
+            console.error("Error sending message to background:", error);
+        }
     }
 }
 
