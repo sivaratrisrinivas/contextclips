@@ -1,6 +1,6 @@
 import type { Clip } from "../types";
 
-console.log("📋 Context Clips: Content Script Loaded");
+console.log("📋 Context Clips v2.0: Content Script Loaded ✓");
 
 let lastCopiedText = "";
 let copyDebounceTimer: number | null = null;
