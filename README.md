@@ -2,6 +2,12 @@
 
 A beautifully designed, context-aware clipboard manager Chrome extension inspired by Apple's minimalist design philosophy. Intelligently organizes your copied content with elegant simplicity.
 
+## 📸 Preview
+
+![Context Clips Interface](docs/screenshot.png)
+
+*Context Clips in action - showing the minimalist sidepanel with domain filtering, search, and captured clips from different websites.*
+
 ## ✨ Features
 
 ### Core Features
