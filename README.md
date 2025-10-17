@@ -1,16 +1,24 @@
 # Context Clips
 
-A modern, context-aware clipboard manager Chrome extension that intelligently organizes your copied content by source, type, and time.
+A beautifully designed, context-aware clipboard manager Chrome extension inspired by Apple's minimalist design philosophy. Intelligently organizes your copied content with elegant simplicity.
 
 ## ✨ Features
 
+### Core Features
 - **🎯 Smart Capture**: Automatically captures clipboard content with rich context (URL, page title, timestamp)
-- **📂 Organized History**: View all your clips in a clean, searchable interface
-- **⚡ Quick Access**: Fast keyboard navigation with arrow keys
-- **🔍 Powerful Search**: Find clips instantly by content, domain, or page title
-- **🎨 Beautiful UI**: Modern dark theme with smooth interactions
+- **🏷️ Domain Filtering**: Filter clips by website with elegant pill buttons
+- **🔍 Instant Search**: Find clips instantly across content, domains, and page titles
+- **📋 One-Click Copy**: Click any clip to copy it back to your clipboard
+- **🔗 Quick Access**: Cmd/Ctrl + Click to open the source page
+- **🎨 Beautiful UI**: Minimalist design with light/dark mode support
 - **🔒 Privacy First**: All data stored locally in your browser - no cloud, no tracking
-- **⌨️ Keyboard Shortcuts**: Full keyboard navigation support
+
+### Design Philosophy
+Inspired by Jony Ive's approach to design:
+- **Extreme Simplicity**: Clean, uncluttered interface that focuses on your content
+- **Intuitive Interactions**: No learning curve - actions feel natural and discoverable
+- **Visual Feedback**: Smooth animations and immediate feedback for every action
+- **Content First**: Your clips are the hero, the UI serves to enhance them
 
 ## 🚀 Installation
 
@@ -49,23 +57,41 @@ Simply copy text from any webpage using `Ctrl+C` (Windows/Linux) or `Cmd+C` (Mac
 - Full URL
 - Timestamp
 
+### Finding Clips
+
+**Search**: Type in the search bar to instantly filter clips across all fields
+
+**Domain Filter**: Click domain pills to view clips from specific websites
+- "All" shows everything
+- Individual domains let you focus on specific sources
+- Scroll horizontally to see all available domains
+
+### Using Clips
+
+**Copy to Clipboard**: Click any clip to copy its content
+- Visual feedback with checkmark confirmation
+- Card animates to show the copy was successful
+
+**Open Source**: Hold Cmd (Mac) or Ctrl (Windows/Linux) and click to open the original page
+
+**Delete**: Hover over a clip to reveal the delete button
+
 ### Accessing Clips
 
 Click the extension icon in your toolbar to open the side panel with all your clips.
 
-### Keyboard Shortcuts
+### Searching & Filtering
 
-- `↑` / `↓` - Navigate between clips
-- `Enter` - Copy selected clip to clipboard
-- `Delete` - Remove selected clip
-- `Esc` - Clear search filter
-
-### Searching
-
-Use the search bar to filter clips by:
+**Search Bar**: Type to instantly filter clips by:
 - Content text
 - Website domain
 - Page title
+
+**Domain Filter**: Click pills below the search bar to filter by specific websites
+
+**Combined**: Use search + domain filter together for precise discovery
+
+**Clear Search**: Click the ✕ button in the search field
 
 ## 🛠️ Development
 
