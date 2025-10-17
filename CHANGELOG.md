@@ -5,6 +5,166 @@ All notable changes to Context Clips will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0] - 2024
+
+### Complete UI/UX Redesign - Jony Ive Philosophy
+
+A complete redesign of the sidepanel inspired by Apple's minimalist design principles under Jony Ive.
+
+### Design Philosophy
+
+- **Extreme Simplicity** - Reduction of unnecessary UI elements and complexity
+- **Content First** - Clips are the hero, UI serves to enhance not compete
+- **Material Honesty** - Natural, physics-based animations and interactions
+- **Intuitive Design** - Zero learning curve, discoverable interactions
+
+### Added
+
+- **Smart Domain Filtering**
+  - Filter clips by website domain with elegant pill buttons
+  - "All" view shows everything
+  - Individual domain filters for focused browsing
+  - Horizontal scrollable domain list
+  - Active state clearly indicated with inverted colors
+
+- **Visual Copy Feedback**
+  - Card scales to 98% on copy
+  - Background color inverts (dark ↔ light)
+  - Checkmark badge appears with "Copied" text
+  - Returns to normal after 2 seconds
+  - Satisfying, tactile feel
+
+- **Progressive Disclosure**
+  - Delete buttons only appear on hover
+  - Filter count only shows when filtering
+  - Footer hints only with clips present
+  - Cleaner, less overwhelming interface
+
+- **Enhanced Interactions**
+  - Click to copy (most direct action)
+  - Cmd/Ctrl + Click to open source page
+  - Hover to reveal delete button
+  - Smooth slide-in animations
+
+- **Design Documentation**
+  - `DESIGN.md` - Complete design philosophy guide
+  - Color palette specifications
+  - Typography system
+  - Animation guidelines
+  - Accessibility considerations
+
+### Changed
+
+- **Simplified Interactions**
+  - Removed keyboard navigation (arrow keys, enter, delete)
+  - Single-click copy instead of enter key
+  - Click-based interactions throughout
+  - More intuitive for all users
+
+- **Visual Design Overhaul**
+  - Clean white/gray-950 backgrounds (light/dark)
+  - Minimal color palette focusing on content
+  - System fonts for native feel
+  - Light font weights (300) for elegance
+  - Generous whitespace (8px grid system)
+  - Rounded corners (16px border radius)
+
+- **Typography**
+  - Header: 24px, font-weight 300
+  - Content: 15px with 1.6 line-height
+  - Metadata: 12px for domains
+  - Timestamps: 11px for hierarchy
+
+- **Search Bar**
+  - Refined styling with rounded corners
+  - Integrated domain filter pills
+  - Cleaner placeholder text
+  - Better visual hierarchy
+
+- **Clip Cards**
+  - Larger padding (20px)
+  - Subtle background colors
+  - Smooth hover states
+  - Better content readability
+  - Metadata positioned for clarity
+
+- **Empty States**
+  - Beautiful onboarding with numbered steps
+  - Clear instructions for first-time users
+  - Different states for no clips vs no results
+  - Friendly, welcoming tone
+
+- **Animations**
+  - 200-300ms durations
+  - Ease-out timing curves
+  - Smooth color transitions
+  - Natural feeling motion
+
+### Improved
+
+- **Search Functionality**
+  - Instant filtering as you type
+  - Searches content, domains, and titles
+  - Combined with domain filtering
+  - Results count display
+
+- **User Experience**
+  - No memorization required
+  - Natural, discoverable actions
+  - Visual feedback for all interactions
+  - Reduced cognitive load
+
+- **Accessibility**
+  - Proper focus rings for keyboard navigation
+  - High contrast ratios (WCAG AAA)
+  - Semantic HTML structure
+  - System font respect
+
+- **Performance**
+  - CSS-only animations
+  - No animation libraries
+  - Efficient React re-renders
+  - Minimal JavaScript bundle
+
+### Removed
+
+- **Keyboard Navigation Complexity**
+  - Arrow keys for navigation
+  - Enter key to copy
+  - Delete key to remove
+  - Escape to clear search
+  - Selected index state tracking
+
+- **Visual Clutter**
+  - Emoji from header (📋)
+  - Always-visible keyboard shortcuts
+  - Green accent color everywhere
+  - Heavy borders and outlines
+  - Aggressive hover states
+
+### Technical
+
+- **Component Refactoring**
+  - `App.tsx`: Removed keyboard state, added domain filtering
+  - `SearchBar.tsx`: Added domain pills, refined styling
+  - `ClipItem.tsx`: Added copy feedback, hover states, Cmd+click
+  - `ClipList.tsx`: Simplified without selection state
+  - `EmptyState.tsx`: Beautiful onboarding design
+  - `index.css`: Enhanced scrollbar, animations, focus styles
+
+- **State Management**
+  - Added `selectedDomain` state
+  - Removed `selectedIndex` state
+  - Cleaner filtering logic
+  - More efficient re-renders
+
+### Bug Fixes
+
+- Fixed Permissions Policy violation by removing deprecated `unload` event listener
+- Chrome automatically handles content script cleanup
+
+---
+
 ## [1.0.0] - 2024-10-16
 
 ### Major Refactoring Release
