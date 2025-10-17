@@ -3,40 +3,105 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    @apply box-border;
-  }
+    * {
+        @apply box-border;
+    }
 
-  body {
-    @apply m-0 p-0 antialiased;
-  }
+    body {
+        @apply m-0 p-0 antialiased;
+        font-family:
+            -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+            "Helvetica Neue", Arial, sans-serif;
+    }
 
-  #root {
-    @apply min-h-screen;
-  }
+    #root {
+        @apply min-h-screen;
+    }
 }
 
 @layer utilities {
-  .line-clamp-3 {
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
+    .line-clamp-3 {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
 
-  .scrollbar-thin::-webkit-scrollbar {
-    width: 6px;
-  }
+    /* Refined scrollbar styling */
+    .scrollbar-thin::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
 
-  .scrollbar-thin::-webkit-scrollbar-track {
-    @apply bg-gray-800;
-  }
+    .scrollbar-thin::-webkit-scrollbar-track {
+        @apply bg-transparent;
+    }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    @apply bg-gray-600 rounded-full;
-  }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+        @apply bg-gray-300 dark:bg-gray-700 rounded-full;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
 
-  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
-    @apply bg-gray-500;
-  }
+    .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        @apply bg-gray-400 dark:bg-gray-600;
+    }
+
+    /* Smooth transitions for theme changes */
+    * {
+        transition-property:
+            background-color, border-color, color, fill, stroke;
+        transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+        transition-duration: 150ms;
+    }
+
+    /* Override for explicit transitions */
+    .transition-all,
+    .transition-colors,
+    .transition-opacity,
+    .transition-transform {
+        transition-property: revert;
+        transition-timing-function: revert;
+        transition-duration: revert;
+    }
+}
+
+/* Custom animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeIn {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Smooth scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Focus visible styles for accessibility */
+*:focus-visible {
+    @apply outline-none ring-2 ring-offset-2 ring-gray-900 dark:ring-white ring-offset-white dark:ring-offset-gray-950;
+    border-radius: 0.5rem;
+}
+
+/* Selection colors */
+::selection {
+    @apply bg-gray-900 dark:bg-white text-white dark:text-gray-900;
+}
+
+/* Keyboard hint styling */
+kbd {
+    @apply inline-flex items-center justify-center;
+    font-family:
+        ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+        "Liberation Mono", monospace;
 }
